@@ -9,6 +9,7 @@ const handleHelloWorld = (req, res) => {
 const handleUserPage = async (req, res) => {
     // model => get data from database
     let userList = await userService.getUserList();
+    await userService.deleteUser(2);
     return res.render("user.ejs", {userList});
 }
 
@@ -20,7 +21,14 @@ const handleCreateNewUser = (req, res) => {
     //let checkPassword = bcrypt.compareSync(password, hashPassword); // true
     userService.createNewUser(email, password, username);
 
-    return res.send("handleCreateNewUser ");
+    return res.redirect("/user");
 }
 
-module.exports = { handleHelloWorld, handleUserPage, handleCreateNewUser };
+const handleDeleteUser = async (req, res) => {
+    console.log(">>>check delete Id : ", req.params.id);
+
+    await userService.deleteUser(req.params.id);
+    return res.redirect("/user");
+}
+
+module.exports = { handleHelloWorld, handleUserPage, handleCreateNewUser, handleDeleteUser };

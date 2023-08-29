@@ -11,17 +11,29 @@ const hashUserPassword = (userPassword) => {
     return bcrypt.hashSync(userPassword, salt);
 }
 
-const createNewUser = (email, password, username) => {
+const createNewUser = async (email, password, username) => {
     let hashPass = hashUserPassword(password);
-
+    const connection = await mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        database: 'jwt',
+        Promise: bluebird
+    });
     // insert a new user
-    connection.query(
-        'INSERT INTO users (email, password, username) VALUES (?, ?, ?)', [email, hashPass, username],
-        function (err, results, fields) {
-            console.log(results); // results contains rows returned by server
-            console.log(fields); // fields contains extra meta data about results, if available
-        }
-    );
+    try {
+        const [rows, fields] =
+            await connection.execute('INSERT INTO users (email, password, username) VALUES (?, ?, ?)',
+                [email, hashPass, username]);
+    } catch (error) {
+        console.log(error);
+    }
+    // connection.query(
+    //     'INSERT INTO users (email, password, username) VALUES (?, ?, ?)', [email, hashPass, username],
+    //     function (err, results, fields) {
+    //         console.log(results); // results contains rows returned by server
+    //         console.log(fields); // fields contains extra meta data about results, if available
+    //     }
+    // );
 }
 
 const getUserList = async () => {
@@ -52,8 +64,23 @@ const getUserList = async () => {
     } catch (error) {
         console.log("error>>>", error);
     }
-
-
 }
 
-module.exports = { createNewUser, getUserList };
+const deleteUser = async (id) => {
+    const connection = await mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        database: 'jwt',
+        Promise: bluebird
+    });
+    // insert a new user
+    try {
+        const [rows, fields] =
+            await connection.execute('DELETE FROM users WHERE id = ?', [id]);
+            return rows;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+module.exports = { createNewUser, getUserList, deleteUser };
