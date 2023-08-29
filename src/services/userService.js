@@ -34,14 +34,10 @@ const createNewUser = async (email, password, username) => {
 }
 
 const getUserList = async () => {
-    let user = [];
-    // create the connection to database
-    const connection = await mysql.createConnection({
-        host: 'localhost',
-        user: 'root',
-        database: 'jwt',
-        Promise: bluebird
-    });
+    let users = [];
+    users = await db.User.findAll();
+
+    return users;
     // get list user
     // connection.query(
     //     'SELECT * FROM user',
@@ -55,64 +51,79 @@ const getUserList = async () => {
     //         return user;
     //     }
     // );
-    try {
-        const [rows, fields] = await connection.execute('SELECT * FROM user');
-        return rows;
-    } catch (error) {
-        console.log("error>>>", error);
-    }
+    // try {
+    //     const [rows, fields] = await connection.execute('SELECT * FROM user');
+    //     return rows;
+    // } catch (error) {
+    //     console.log("error>>>", error);
+    // }
 }
 
-const deleteUser = async (id) => {
-    const connection = await mysql.createConnection({
-        host: 'localhost',
-        user: 'root',
-        database: 'jwt',
-        Promise: bluebird
-    });
-    // insert a new user
-    try {
-        const [rows, fields] =
-            await connection.execute('DELETE FROM user WHERE id = ?', [id]);
-            return rows;
-    } catch (error) {
-        console.log(error);
-    }
+const deleteUser = async (userId) => {
+
+    // try {
+    //     const [rows, fields] =
+    //         await connection.execute('DELETE FROM user WHERE id = ?', [id]);
+    //         return rows;
+    // } catch (error) {
+    //     console.log(error);
+    // }
+
+    await db.User.destroy({
+        where: {
+          id: userId
+        }
+      });
 }
 
-const getUserById = async (id) => {
-    const connection = await mysql.createConnection({
-        host: 'localhost',
-        user: 'root',
-        database: 'jwt',
-        Promise: bluebird
-    });
-    // get user infor
-    try {
-        const [rows, fields] =
-            await connection.execute('SELECT * FROM user WHERE id = ?', [id]);
-            return rows;
-    } catch (error) {
-        console.log(error);
-    }
+const getUserById = async (userId) => {
+    // const connection = await mysql.createConnection({
+    //     host: 'localhost',
+    //     user: 'root',
+    //     database: 'jwt',
+    //     Promise: bluebird
+    // });
+    // // get user infor
+    // try {
+    //     const [rows, fields] =
+    //         await connection.execute('SELECT * FROM user WHERE id = ?', [id]);
+    //         return rows;
+    // } catch (error) {
+    //     console.log(error);
+    // }
+
+    let user = {};
+    user = await db.User.findOne({
+        where: {id: userId}
+    })
+    return user.get({ plain: true});
 }
 
-const updateUser = async (id, email, username) => {
+const updateUser = async (userId, email, username) => {
 
-    const connection = await mysql.createConnection({
-        host: 'localhost',
-        user: 'root',
-        database: 'jwt',
-        Promise: bluebird
-    });
-    // update user infor
-    try {
-        const [rows, fields] =
-            await connection.execute('UPDATE user SET email = ?, username = ? WHERE id = ?',
-                [email, username, id]);
-    } catch (error) {
-        console.log(error);
-    }
+    // const connection = await mysql.createConnection({
+    //     host: 'localhost',
+    //     user: 'root',
+    //     database: 'jwt',
+    //     Promise: bluebird
+    // });
+    // // update user infor
+    // try {
+    //     const [rows, fields] =
+    //         await connection.execute('UPDATE user SET email = ?, username = ? WHERE id = ?',
+    //             [email, username, id]);
+    // } catch (error) {
+    //     console.log(error);
+    // }
+
+    await db.User.update({ 
+        email: email,
+        username: username
+     }, {
+        where: {
+          id: userId
+        }
+      });
 }
 
 module.exports = { createNewUser, getUserList, deleteUser, getUserById, updateUser };
