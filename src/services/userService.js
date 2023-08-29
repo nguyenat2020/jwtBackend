@@ -1,12 +1,7 @@
-import mysql from "mysql2";
+import mysql from "mysql2/promise";
 import bcrypt from "bcryptjs";
+import bluebird from "bluebird";
 
-// create the connection to database
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    database: 'jwt'
-});
 
 // setting hash salt
 const salt = bcrypt.genSaltSync(10);
@@ -21,7 +16,7 @@ const createNewUser = (email, password, username) => {
 
     // insert a new user
     connection.query(
-        'INSERT INTO users (email, password, username) VALUES (?, ?, ?)',[email, hashPass, username],
+        'INSERT INTO users (email, password, username) VALUES (?, ?, ?)', [email, hashPass, username],
         function (err, results, fields) {
             console.log(results); // results contains rows returned by server
             console.log(fields); // fields contains extra meta data about results, if available
@@ -29,17 +24,36 @@ const createNewUser = (email, password, username) => {
     );
 }
 
-const getUserList = () => {
-        let users = [];
-        // get list user
-        connection.query(
-            'SELECT * FROM users',
-            function (err, results, fields) {
-                if (err) {
-                    console.log(err)
-                }
-            }
-        );
+const getUserList = async () => {
+    let users = [];
+    // create the connection to database
+    const connection = await mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        database: 'jwt',
+        Promise: bluebird
+    });
+    // get list user
+    // connection.query(
+    //     'SELECT * FROM users',
+    //     function (err, results, fields) {
+    //         if (err) {
+    //             console.log(err);
+    //             return users;
+    //         }
+
+    //         users = results;
+    //         return users;
+    //     }
+    // );
+    try {
+        const [rows, fields] = await connection.execute('SELECT * FROM users');
+        return rows;
+    } catch (error) {
+        console.log("error>>>", error);
+    }
+
+
 }
 
-module.exports = {createNewUser, getUserList};
+module.exports = { createNewUser, getUserList };
